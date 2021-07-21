@@ -1,0 +1,30 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+      <link href='../../../org.eclipse.wst.doc.user/common.css' rel="stylesheet" type="text/css"/>
+            <link href='../../../org.mule.tooling.ui.modules.core/help/stylesheet/helptopics.css' rel="stylesheet" type="text/css"/>
+      <title>Map reduce objects</title>
+  </head>
+<body>
+  <h1 class="topictitle1">Map reduce objects</h1>
+  <p class="description">Transforms a collection into a collection of aggregated groups, by applying a
+supplied element-mapping function to each element, that transforms each one
+into a key-value pair, grouping the resulting pairs by key, and finally
+reducing values in each group applying a suppling 'reduce' function.
+<p/>
+Each supplied function is coded in JavaScript.
+<p/>
+Note that the correct way of writing those functions may not be obvious;
+please consult MongoDB documentation for writing them.
+<p/>
+{@sample.xml ../../../doc/mongo-connector.xml.sample
+mongo:map-reduce-objects}</p>
+  <p><a href="index.html">See full list.</a></p>
+  
+<h2>Additional Information</h2>
+<ul>
+        <li><a href="http://www.mulesoft.org/documentation/display/current/Anypoint+Connector+DevKit">Devkit Documentation Page</a></li>
+</ul></body>
+</html>

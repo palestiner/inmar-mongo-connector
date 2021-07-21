@@ -1,0 +1,3 @@
+<!-- BEGIN_INCLUDE(inmar-mongo:greet) -->
+    <inmar-mongo:greet config-ref="" friend="#[map-payload:friend]" />
+<!-- END_INCLUDE(inmar-mongo:greet) -->

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.bson:bson:2.6.3-no-key-checks-joda-gridfs">
+    <CLASSES>
+      <root url="jar://$M2_REPO$/repository/org/bson/bson/2.6.3-no-key-checks-joda-gridfs/bson-2.6.3-no-key-checks-joda-gridfs.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$M2_REPO$/repository/org/bson/bson/2.6.3-no-key-checks-joda-gridfs/bson-2.6.3-no-key-checks-joda-gridfs-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$M2_REPO$/repository/org/bson/bson/2.6.3-no-key-checks-joda-gridfs/bson-2.6.3-no-key-checks-joda-gridfs-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

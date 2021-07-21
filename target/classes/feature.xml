@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><feature id="org.mule.tooling.ui.extension.inmar-mongo-connector.3.5.0" label="Mongo DB Connector (Mule 3.5+)" provider-name="Mulesoft, Inc." version="1.0.0.202106091846"><license/><plugin download-size="0" id="org.mule.tooling.ui.contribution.mongo.3.5.0" install-size="0" unpack="true" version="1.0.0.202106091846"/></feature>

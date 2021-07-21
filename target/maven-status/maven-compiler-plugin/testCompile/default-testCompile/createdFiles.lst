@@ -1,0 +1,2 @@
+org\mule\modules\module\mongo\automation\functional\FindObjectsTestCases.class
+org\mule\modules\module\mongo\automation\runner\FunctionalTestSuite.class

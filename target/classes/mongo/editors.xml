@@ -1,0 +1,1040 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<namespace xmlns="http://www.mulesoft.org/schema/mule/tooling.attributes" xmlns:mule="http://www.mulesoft.org/schema/mule/core" url="http://www.mulesoft.org/schema/mule/mongo" prefix="mongo">
+  <global-cloud-connector versions="[3.5.0,8.0.0]" caption="Mongo DB" description="" icon="" localId="parentConfig" image="" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric"></global-cloud-connector>
+  <nested caption="" description="" localId="connection-pooling-profile" abstract="true">
+    <radioBoolean name="defaultPoolingProfile" caption="Use default connection pool configuration" description="Use default connection pool configuration." fillLine="true"></radioBoolean>
+    <radioBoolean name="customPoolingProfile" caption="Define connection pool configuration" description="Define connection pool configuration." fillLine="true"></radioBoolean>
+    <integer defaultValue="5" min="-1" step="0" name="maxActive" caption="Max active" description="Controls the maximum number of connections that can be borrowed from the pool at one time. When set to a negative value, there is no limit to the number of connections that may be active at one time. When maxActive is exceeded, the pool is said to be exhausted." controlled="customPoolingProfile" indented="true" fillLine="true"></integer>
+    <integer defaultValue="5" min="-1" step="0" name="maxIdle" caption="Max idle" description="Controls the maximum number of connections that can sit idle in the pool at any time. When set to a negative value, there is no limit to the number of connections that may be idle at one time." controlled="customPoolingProfile" indented="true" fillLine="true"></integer>
+    <enum defaultValue="INITIALISE_ONE" name="initialisationPolicy" caption="Initialisation policy" description="Determines how connections in a pool should be initialized. The possible values are: INITIALISE_NONE (will not load any connection into the pool on startup), INITIALISE_ONE (will load one initial connection into the pool on startup), or INITIALISE_ALL (will load all connections in the pool on startup)" alwaysFill="true" controlled="customPoolingProfile" indented="true">
+      <option value="INITIALISE_NONE"></option>
+      <option value="INITIALISE_ONE"></option>
+      <option value="INITIALISE_ALL"></option>
+    </enum>
+    <enum defaultValue="WHEN_EXHAUSTED_GROW" name="exhaustedAction" caption="Exhausted action" description="Specifies the behavior of the connection pool when the pool is exhausted. Possible values are: &quot;WHEN_EXHAUSTED_FAIL&quot;, which will throw a NoSuchElementException, &quot;WHEN_EXHAUSTED_WAIT&quot;, which will block by invoking Object.wait(long) until a new or idle object is available, or WHEN_EXHAUSTED_GROW, which will create a new connection and return it, essentially making maxActive meaningless. If a positive maxWait value is supplied, it will block for at most that many milliseconds, after which a NoSuchElementException will be thrown. If maxThreadWait is a negative value, it will block indefinitely." alwaysFill="true" controlled="customPoolingProfile" indented="true">
+      <option value="WHEN_EXHAUSTED_WAIT"></option>
+      <option value="WHEN_EXHAUSTED_FAIL"></option>
+      <option value="WHEN_EXHAUSTED_GROW"></option>
+    </enum>
+    <integer defaultValue="5" min="-1" step="0" name="maxWait" caption="Max wait" description="When exhausted action is Wait (or block) this is the amount of time in milliseconds that the pool will wait before failing. Setting a negative value will block indefinitely until an idle instance becomes available." controlled="customPoolingProfile" indented="true" fillLine="true"></integer>
+    <integer defaultValue="1800000" min="-1" step="0" name="minEvictionMillis" caption="Min eviction (ms)" description="Determines the minimum amount of time a connection may sit idle in the pool before it is eligible for eviction. When non-positive, no connections will be evicted from the pool due to idle time alone." controlled="customPoolingProfile" indented="true" fillLine="true"></integer>
+    <integer defaultValue="-1" min="-1" step="0" name="evictionCheckIntervalMillis" caption="Eviction check interval (ms)" description="Specifies the number of milliseconds between runs of the connection evictor. When non-positive, no connection evictor is executed." controlled="customPoolingProfile" indented="true" fillLine="true"></integer>
+  </nested>
+  <nested caption="" description="" localId="reconnectionStrategyElement" abstract="true">
+    <label name="connectionLabel" caption="Define how mule should attempt to handle a connection failure" description=""></label>
+    <radioBoolean name="noReconnection" caption="Do not use a Reconnection strategy" description="Disable reconection strategy" fillLine="true"></radioBoolean>
+    <radioBoolean name="standardReconnection" caption="Standard Reconnection" description="A reconnection strategy that allows the user to configure how many times a reconnection should be attempted and how long to wait between attempts." fillLine="true"></radioBoolean>
+    <integer defaultValue="2000" min="1" max="2147483647" step="1" name="reconnectionFrequency" caption="Frequency (ms)" description="How often (in ms) to reconnect" controlled="standardReconnection" indented="true"></integer>
+    <integer defaultValue="2" min="1" max="2147483647" step="1" name="reconnectionAttemps" caption="Reconnection Attempts" description="How many reconnection attempts to make" controlled="standardReconnection,!reconnectForever" indented="true"></integer>
+    <boolean name="reconnectForever" caption="Reconnect Forever" description="A reconnection strategy that retries an infinite number of times at the specified frequency." supportsExpressions="false" controlled="standardReconnection" indented="true"></boolean>
+    <radioBoolean name="customReconnection" caption="Custom Reconnection" description="A user-defined reconnection strategy." fillLine="true"></radioBoolean>
+    <classname name="class" caption="Class" description="A class that implements the RetryPolicyTemplate interface." controlled="customReconnection" indented="true"></classname>
+    <childElement allowMultiple="true" name="http://www.springframework.org/schema/beans/property" caption="Properties" description="Property elements." controlled="customReconnection"></childElement>
+  </nested>
+  <transformer versions="[3.5.0,8.0.0]" aliasId="org.mule.tooling.ui.modules.core.pattern.mongo" caption="Mongo DB" description="MongoDB is an open source, high-performance, schema-free, document-oriented
+database that manages collections of BSON documents." icon="icons/theme.classic/mongo-transformer-small.png" localId="mongo-transformer" image="icons/theme.classic/mongo-transformer-large.png">
+    <attribute-category caption="General" description="General.">
+      <group id="mongoConnectorGeneric" caption="Basic Settings">
+        <modeSwitch alwaysCombo="true" name="Mongo operations to execute" caption="Operation" description="Operation.">
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/bson-list-to-json" modeLabel="Bson list to json"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/db-object-to-map" modeLabel="Db object to map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/dbobject-to-json" modeLabel="Dbobject to json"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/json-to-dbobject" modeLabel="Json to dbobject"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/mongo-collection-to-json" modeLabel="Mongo collection to json"></mode>
+        </modeSwitch>
+      </group>
+    </attribute-category>
+  </transformer>
+  <transformer caption="Base Transformer" description="Base transformer." localId="abstractTransformer" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/mongo-transformer">
+    <attribute-category caption="Advanced" description="Advanced settings for transformer.">
+      <group id="abstractTransformerSettings" caption="Transformer Settings">
+        <string name="returnClass" caption="Return Class" description="The class of the message generated by the transformer. This is used if transformers are auto-selected and to validate that the transformer returns the correct type. Note that if you need to specify an array type you need postfix the class name with '[]'. For example, if you want return a an Orange[], you set the return class to 'org.mule.tck.testmodels.fruit.Orange[]'."></string>
+        <boolean name="ignoreBadInput" xsdType="substitutableBoolean" caption="Ignore Bad Input" description="Many transformers only accept certain classes. Such transformers are never called with inappropriate input (whatever the value of this attribute). If a transformer forms part of a chain and cannot accept the current message class, this flag controls whether the remaining part of the chain is evaluated. If true, the next transformer is called. If false the chain ends, keeping the result generated up to that point."></boolean>
+        <encoding name="encoding" xsdType="string" caption="Encoding" description="String encoding used for transformer output."></encoding>
+      </group>
+      <group id="mimeTypeAttributes" caption="Mime Type Attributes">
+        <enum allowsCustom="true" name="mimeType" xsdType="string" caption="Mime Type" description="The mime type of the transformer's output.">
+          <option value="text/plain"></option>
+          <option value="text/css"></option>
+          <option value="text/javascript"></option>
+          <option value="text/xml"></option>
+          <option value="text/xhtml"></option>
+          <option value="text/html"></option>
+          <option value="image/jpeg"></option>
+          <option value="image/gif"></option>
+          <option value="image/png"></option>
+          <option value="application/json"></option>
+          <option value="application/pdf"></option>
+          <option value="application/x-compressed"></option>
+          <option value="application/zip"></option>
+          <option value="multipart/x-zip"></option>
+          <option value="binary/octet-stream"></option>
+        </enum>
+      </group>
+    </attribute-category>
+  </transformer>
+  <global-transformer versions="[3.5.0,8.0.0]" caption="Mongo DB" description="Global transformer." icon="icons/theme.classic/mongo-transformer-small.png" localId="global-transformer" image="icons/theme.classic/mongo-transformer-large.png" abstract="false" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer">
+    <attribute-category caption="General" description="General.">
+      <group id="mongoConnectorGeneric" caption="Basic Settings">
+        <modeSwitch alwaysCombo="true" name="Mongo operations to execute" caption="Operation" description="Operation.">
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/bson-list-to-json" modeLabel="Bson list to json"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/db-object-to-map" modeLabel="Db object to map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/dbobject-to-json" modeLabel="Dbobject to json"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/json-to-dbobject" modeLabel="Json to dbobject"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/mongo-collection-to-json" modeLabel="Mongo collection to json"></mode>
+        </modeSwitch>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <transformer caption="Json To Dbobject" description="Convert JSON to DBObject.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:jsonToDbobject}." icon="icons/theme.classic/mongo-transformer-small.png" localId="json-to-dbobject" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer"></transformer>
+  <global-transformer caption="Json To Dbobject" description="Convert JSON to DBObject.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:jsonToDbobject}." icon="icons/theme.classic/mongo-transformer-small.png" localId="json-to-dbobject" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/json-to-dbobject">
+    <attribute-category caption="General" description="General.">
+      <group caption="Basic Settings">
+        <name name="name" caption="Name" description="Identifies the transformer so that other elements can reference it. Required if the transformer is defined at the global level." required="true"></name>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <transformer caption="Dbobject To Json" description="Convert DBObject to Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:dbobjectToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="dbobject-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer"></transformer>
+  <global-transformer caption="Dbobject To Json" description="Convert DBObject to Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:dbobjectToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="dbobject-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/dbobject-to-json">
+    <attribute-category caption="General" description="General.">
+      <group caption="Basic Settings">
+        <name name="name" caption="Name" description="Identifies the transformer so that other elements can reference it. Required if the transformer is defined at the global level." required="true"></name>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <transformer caption="Bson List To Json" description="Convert a BasicBSONList into Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:bsonListToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="bson-list-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer"></transformer>
+  <global-transformer caption="Bson List To Json" description="Convert a BasicBSONList into Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:bsonListToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="bson-list-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/bson-list-to-json">
+    <attribute-category caption="General" description="General.">
+      <group caption="Basic Settings">
+        <name name="name" caption="Name" description="Identifies the transformer so that other elements can reference it. Required if the transformer is defined at the global level." required="true"></name>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <transformer caption="Mongo Collection To Json" description="Convert a BasicBSONList into Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample
+mongo:mongoCollectionToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="mongo-collection-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer"></transformer>
+  <global-transformer caption="Mongo Collection To Json" description="Convert a BasicBSONList into Json.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample
+mongo:mongoCollectionToJson}." icon="icons/theme.classic/mongo-transformer-small.png" localId="mongo-collection-to-json" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/mongo-collection-to-json">
+    <attribute-category caption="General" description="General.">
+      <group caption="Basic Settings">
+        <name name="name" caption="Name" description="Identifies the transformer so that other elements can reference it. Required if the transformer is defined at the global level." required="true"></name>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <transformer caption="Db Object To Map" description="Convert a DBObject into Map.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:dbObjectToMap}." icon="icons/theme.classic/mongo-transformer-small.png" localId="db-object-to-map" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractTransformer"></transformer>
+  <global-transformer caption="Db Object To Map" description="Convert a DBObject into Map.
+
+{@sample.xml ../../../doc/mongo-connector.xml.sample mongo:dbObjectToMap}." icon="icons/theme.classic/mongo-transformer-small.png" localId="db-object-to-map" image="icons/theme.classic/mongo-transformer-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/db-object-to-map">
+    <attribute-category caption="General" description="General.">
+      <group caption="Basic Settings">
+        <name name="name" caption="Name" description="Identifies the transformer so that other elements can reference it. Required if the transformer is defined at the global level." required="true"></name>
+      </group>
+    </attribute-category>
+  </global-transformer>
+  <global-cloud-connector versions="[3.5.0,8.0.0]" caption="Mongo DB" description="Global Mongo DB configuration information." icon="icons/theme.classic/mongo-connector-small.png" localId="config" image="icons/theme.classic/mongo-connector-large.png" abstract="false" extends="http://www.mulesoft.org/schema/mule/mongo/parentConfig" connectivityTesting="off" metaData="static" metaDataKeyDisplay="DISPLAY_NAME" supportsUserDefinedMetaData="false">
+    <attribute-category caption="General" description="Mongo configuration properties.">
+      <group id="mongoGenericProperties" caption="Basic Settings">
+        <name name="name" caption="Name" description="Give a name to this configuration so it can be later referenced by config-ref." required="true"></name>
+      </group>
+      <group id="connection" caption="Connection">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+      <group id="general" caption="General">
+        <string defaultValue="localhost" name="host" caption="Host" description="The host of the Mongo server, it can also be a list of comma separated hosts
+for replicas." supportsExpressions="false" required="false" javaType="java.lang.String"></string>
+        <integer defaultValue="30000" min="0" step="1" name="connectTimeout" caption="Connect Timeout" description="The connection timeout in milliseconds; this is for establishing the socket
+connections (open). 0 is default and infinite." supportsExpressions="false" required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="connectionsPerHost" caption="Connections Per Host" description="The number of connections allowed per host (the pool size, per host)." supportsExpressions="false" required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="maxWaitTime" caption="Max Wait Time" description="The max wait time for a blocking thread for a connection from the pool in ms." supportsExpressions="false" required="false" javaType="java.lang.Integer"></integer>
+        <integer defaultValue="27017" min="0" step="1" name="port" caption="Port" description="The port of the Mongo server." supportsExpressions="false" required="false" javaType="int"></integer>
+        <integer min="0" step="1" name="socketTimeout" caption="Socket Timeout" description="The socket timeout. 0 is default and infinite." supportsExpressions="false" required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="threadsAllowedToBlockForConnectionMultiplier" caption="Threads Allowed To Block For Connection Multiplier" description="Multiplier for connectionsPerHost for # of threads that can block." supportsExpressions="false" required="false" javaType="java.lang.Integer"></integer>
+        <boolean defaultValue="true" name="autoConnectRetry" caption="Auto Connect Retry" description="This controls whether the system retries automatically on connection errors." supportsExpressions="false" required="false" javaType="java.lang.Boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Pooling Profile" description="Pooling profile options.">
+      <group id="poolingProfile" caption="Pooling Profile">
+        <childElement inplace="true" name="http://www.mulesoft.org/schema/mule/mongo/connection-pooling-profile" caption="" description="" valuePersistence="org.mule.tooling.ui.modules.core.widgets.meta.PoolingProfileValuePersistence"></childElement>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Reconnection" description="Reconnection options.">
+      <group id="reconnectionStrategies" caption="Strategies">
+        <childElement inplace="true" name="http://www.mulesoft.org/schema/mule/core/reconnectionStrategyElement" caption="" description="" valuePersistence="org.mule.tooling.ui.modules.core.widgets.meta.HTTPTransactionValuePersistence"></childElement>
+        <childElement allowSubTypes="true" allowedSubTypes="http://www.mulesoft.org/schema/mule/core/reconnect,http://www.mulesoft.org/schema/mule/core/reconnect-custom-strategy,http://www.mulesoft.org/schema/mule/core/reconnect-forever" name="http://www.mulesoft.org/schema/mule/core/abstractReconnectionStrategy" caption="" description="" visibleInDialog="false"></childElement>
+      </group>
+    </attribute-category>
+  </global-cloud-connector>
+  <cloud-connector caption="Abstractmongoconnectorgeneric" description="Interact with Mongo." icon="icons/theme.classic/mongo-connector-small.png" localId="abstractMongoConnectorGeneric" image="icons/theme.classic/mongo-connector-large.png" abstract="true">
+    <attribute-category caption="General" description="General.">
+      <group id="abstractMongoConnectorGeneric" caption="Basic Settings">
+        <globalRef requiredType="http://www.mulesoft.org/schema/mule/mongo/config" name="config-ref" caption="Connector Configuration" description="Specify which configuration to use for this invocation." required="true"></globalRef>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector versions="[3.5.0,8.0.0]" aliasId="org.mule.tooling.ui.modules.core.pattern.mongo" caption="Mongo DB" description="MongoDB is an open source, high-performance, schema-free, document-oriented
+database that manages collections of BSON documents." icon="icons/theme.classic/mongo-connector-small.png" localId="mongo-connector" image="icons/theme.classic/mongo-connector-large.png" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric">
+    <attribute-category caption="General" description="General.">
+      <group id="mongoConnectorGeneric" caption="Basic Settings">
+        <modeSwitch alwaysCombo="true" name="Mongo operations to execute" caption="Operation" description="Operation.">
+          <no-operation abstractElement="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" versions="[3.5.0,8.0.0]" connector-name="processor"></no-operation>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/add-user" modeLabel="Add user"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/count-objects" modeLabel="Count objects"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/count-objects-using-query-map" modeLabel="Count objects using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/create-collection" modeLabel="Create collection"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/create-file-from-payload" modeLabel="Create file from payload"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/create-index" modeLabel="Create index"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/drop-collection" modeLabel="Drop collection"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/drop-database" modeLabel="Drop database"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/drop-index" modeLabel="Drop index"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/dump" modeLabel="Dump"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/end-consistent-request" modeLabel="End consistent request"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/execute-command" modeLabel="Execute command"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/exists-collection" modeLabel="Exists collection"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-files" modeLabel="Find files"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-files-using-query-map" modeLabel="Find files using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-objects" modeLabel="Find objects"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-objects-using-query-map" modeLabel="Find objects using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-one-file" modeLabel="Find one file"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-one-file-using-query-map" modeLabel="Find one file using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-one-object" modeLabel="Find one object"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/find-one-object-using-query-map" modeLabel="Find one object using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/get-file-content" modeLabel="Get file content"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/get-file-content-using-query-map" modeLabel="Get file content using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/incremental-dump" modeLabel="Incremental dump"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/insert-object" modeLabel="Insert object"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/insert-object-from-map" modeLabel="Insert object from map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/list-collections" modeLabel="List collections"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/list-files" modeLabel="List files"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/list-files-using-query-map" modeLabel="List files using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/list-indices" modeLabel="List indices"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/map-reduce-objects" modeLabel="Map reduce objects"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/remove-files" modeLabel="Remove files"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/remove-files-using-query-map" modeLabel="Remove files using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/remove-objects" modeLabel="Remove objects"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/remove-objects-using-query-map" modeLabel="Remove objects using query map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/restore" modeLabel="Restore"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/save-object" modeLabel="Save object"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/save-object-from-map" modeLabel="Save object from map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/start-consistent-request" modeLabel="Start consistent request"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/update-objects" modeLabel="Update objects"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/update-objects-by-function" modeLabel="Update objects by function"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/update-objects-by-function-using-map" modeLabel="Update objects by function using map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/update-objects-using-map" modeLabel="Update objects using map"></mode>
+          <mode modeId="http://www.mulesoft.org/schema/mule/mongo/update-objects-using-query-map" modeLabel="Update objects using query map"></mode>
+        </modeSwitch>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Add User" icon="icons/theme.classic/mongo-connector-small.png" localId="add-user" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="newPassword" caption="New Password" description="Password that will be used for authentication." required="true" javaType="java.lang.String"></string>
+        <string name="newUsername" caption="New Username" description="Name of the user." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="long" caption="Count Objects" icon="icons/theme.classic/mongo-connector-small.png" localId="count-objects" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The optional {@link DBObject} query for counting objects. Only objects matching it will be counted. If unspecified, all objects are counted." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="long" caption="Count Objects Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="count-objects-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+      </group>
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="count-objects-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The optional query for counting objects. Only objects matching it will be counted. If unspecified, all objects are counted." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Create Collection" icon="icons/theme.classic/mongo-connector-small.png" localId="create-collection" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to create." required="true" javaType="java.lang.String"></string>
+        <integer min="0" step="1" name="maxObjects" caption="Max Objects" description="The maximum number of documents the new collection is able to contain." required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="size" caption="Size" description="The maximum size of the new collection." required="false" javaType="java.lang.Integer"></integer>
+        <boolean defaultValue="false" name="capped" caption="Capped" description="If the collection will be capped." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Create File From Payload" icon="icons/theme.classic/mongo-connector-small.png" localId="create-file-from-payload" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="contentType" caption="Content Type" description="The optional content type of the new file." required="false" javaType="java.lang.String"></string>
+        <string name="filename" caption="Filename" description="The mandatory name of new file." required="true" javaType="java.lang.String"></string>
+        <string name="metadata-ref" caption="Metadata Reference" description="The optional {@link DBObject} metadata of the new content type." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Create Index" icon="icons/theme.classic/mongo-connector-small.png" localId="create-index" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection where the index will be created." required="true" javaType="java.lang.String"></string>
+        <string name="field" caption="Field" description="The name of the field which will be indexed." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="ASC" allowsCustom="true" name="order" caption="Order" description="The indexing order." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.IndexOrder">
+          <option value="ASC"></option>
+          <option value="DESC"></option>
+        </enum>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Drop Collection" icon="icons/theme.classic/mongo-connector-small.png" localId="drop-collection" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to drop." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Drop Database" icon="icons/theme.classic/mongo-connector-small.png" localId="drop-database" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General."></attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Drop Index" icon="icons/theme.classic/mongo-connector-small.png" localId="drop-index" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection where the index is." required="true" javaType="java.lang.String"></string>
+        <string name="index" caption="Index" description="The name of the index to drop." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Dump" icon="icons/theme.classic/mongo-connector-small.png" localId="dump" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="dump" name="outputDirectory" caption="Output Directory" description="Output directory path, if no output directory is provided the default /dump directory is assumed." required="false" javaType="java.lang.String"></string>
+        <string name="outputName" caption="Output Name" description="Output file name, if it's not specified the database name is used." required="false" javaType="java.lang.String"></string>
+        <integer defaultValue="5" min="0" step="1" name="threads" caption="Threads" description="Amount of threads to execute the dump." required="false" javaType="int"></integer>
+        <boolean defaultValue="false" name="oplog" caption="Oplog" description="Point in time backup (requires an oplog)." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="zip" caption="Zip" description="Whether to zip the created dump file or not." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="End Consistent Request" icon="icons/theme.classic/mongo-connector-small.png" localId="end-consistent-request" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General."></attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Execute Command" icon="icons/theme.classic/mongo-connector-small.png" localId="execute-command" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="commandName" caption="Command Name" description="The command to execute on the database." required="true" javaType="java.lang.String"></string>
+        <string name="commandValue" caption="Command Value" description="The value for the command." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="boolean" caption="Exists Collection" icon="icons/theme.classic/mongo-connector-small.png" localId="exists-collection" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="Find Files" icon="icons/theme.classic/mongo-connector-small.png" localId="find-files" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="A {@link DBObject} query the optional query." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="Find Files Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="find-files-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="find-files-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The optional query attributes." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="Find Objects" icon="icons/theme.classic/mongo-connector-small.png" localId="find-objects" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="" name="query-ref" caption="Query Reference" description="The optional {@link DBObject} query object. If unspecified, all documents are returned." required="false" javaType="com.mongodb.DBObject"></string>
+        <integer min="0" step="1" name="limit" caption="Limit" description="Limit of objects to return." required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="numToSkip" caption="Num To Skip" description="Number of objects skip (offset)." required="false" javaType="java.lang.Integer"></integer>
+        <string name="sortBy-ref" caption="Sort By Reference" description="Indicates the {@link DBObject} used to sort the results." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+      <group id="fields" caption="Fields">
+        <element-controller-list listName="fields" localName="find-objects-fields" itemName="field" caption="Fields" description="Alternative way of passing fields as a literal List." required="false" javaType="java.util.List&lt;java.lang.String&gt;"></element-controller-list>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="Find Objects Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="find-objects-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+        <integer min="0" step="1" name="limit" caption="Limit" description="Limit of objects to return." required="false" javaType="java.lang.Integer"></integer>
+        <integer min="0" step="1" name="numToSkip" caption="Num To Skip" description="Number of objects skip (offset)." required="false" javaType="java.lang.Integer"></integer>
+        <string name="sortBy-ref" caption="Sort By Reference" description="Indicates the {@link DBObject} used to sort the results." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="find-objects-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The optional query object. If unspecified, all documents are returned." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+      <group id="fields" caption="Fields">
+        <element-controller-list listName="fields" localName="find-objects-using-query-map-fields" itemName="field" caption="Fields" description="Alternative way of passing fields as a literal List." required="false" javaType="java.util.List&lt;java.lang.String&gt;"></element-controller-list>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Find One File" icon="icons/theme.classic/mongo-connector-small.png" localId="find-one-file" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="query-ref" caption="Query Reference" description="The {@link DBObject} mandatory query." required="true" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Find One File Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="find-one-file-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="find-one-file-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The mandatory query." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Find One Object" icon="icons/theme.classic/mongo-connector-small.png" localId="find-one-object" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The mandatory {@link DBObject} query object that the returned object matches." required="false" javaType="com.mongodb.DBObject"></string>
+        <boolean defaultValue="true" name="failOnNotFound" caption="Fail On Not Found" description="Flag to specify if an exception will be thrown when no object is found. For backward compatibility the default value is true." supportsExpressions="true" required="false" javaType="java.lang.Boolean"></boolean>
+      </group>
+      <group id="fields" caption="Fields">
+        <element-controller-list listName="fields" localName="find-one-object-fields" itemName="field" caption="Fields" description="Alternative way of passing fields as a literal List." required="false" javaType="java.util.List&lt;java.lang.String&gt;"></element-controller-list>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="com.mongodb.DBObject" caption="Find One Object Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="find-one-object-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The target collection." required="true" javaType="java.lang.String"></string>
+        <boolean defaultValue="true" name="failOnNotFound" caption="Fail On Not Found" description="Flag to specify if an exception will be thrown when no object is found. For backward compatibility the default value is true." supportsExpressions="true" required="false" javaType="java.lang.Boolean"></boolean>
+      </group>
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="find-one-object-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The mandatory query object that the returned object matches." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+      <group id="fields" caption="Fields">
+        <element-controller-list listName="fields" localName="find-one-object-using-query-map-fields" itemName="field" caption="Fields" description="Alternative way of passing fields as a literal List." required="false" javaType="java.util.List&lt;java.lang.String&gt;"></element-controller-list>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.io.InputStream" caption="Get File Content" icon="icons/theme.classic/mongo-connector-small.png" localId="get-file-content" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The {@link DBObject} mandatory query." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.io.InputStream" caption="Get File Content Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="get-file-content-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="get-file-content-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The mandatory query attributes." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Incremental Dump" icon="icons/theme.classic/mongo-connector-small.png" localId="incremental-dump" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="incrementalTimestampFile" caption="Incremental Timestamp File" description="File that keeps track of the last timestamp processed, if no file is provided one is created on the output directory." required="false" javaType="java.lang.String"></string>
+        <string defaultValue="dump" name="outputDirectory" caption="Output Directory" description="Output directory path, if no output directory is provided the default /dump directory is assumed." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.String" caption="Insert Object" icon="icons/theme.classic/mongo-connector-small.png" localId="insert-object" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection where to insert the given object." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="#[payload]" name="dbObject-ref" caption="Db Object Reference" description="A {@link DBObject} instance." required="false" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The optional write concern of insertion." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.String" caption="Insert Object From Map" icon="icons/theme.classic/mongo-connector-small.png" localId="insert-object-from-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection where to insert the given object." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The optional write concern of insertion." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+      <group id="element Attributes" caption="Element Attributes">
+        <element-controller-map mapName="element-attributes" localName="insert-object-from-map-element-attributes" itemName="element-attribute" caption="Element Attributes" description="Alternative way of specifying the element as a literal Map inside a Mule Flow." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.util.Collection&lt;java.lang.String&gt;" caption="List Collections" icon="icons/theme.classic/mongo-connector-small.png" localId="list-collections" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General."></attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="List Files" icon="icons/theme.classic/mongo-connector-small.png" localId="list-files" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The {@link DBObject} optional query." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="List Files Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="list-files-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="list-files-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The optional query." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.util.Collection&lt;com.mongodb.DBObject&gt;" caption="List Indices" icon="icons/theme.classic/mongo-connector-small.png" localId="list-indices" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="java.lang.Iterable&lt;com.mongodb.DBObject&gt;" caption="Map Reduce Objects" icon="icons/theme.classic/mongo-connector-small.png" localId="map-reduce-objects" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to map and reduce." required="true" javaType="java.lang.String"></string>
+        <string name="mapFunction" caption="Map Function" description="A JavaScript encoded mapping function." required="true" javaType="java.lang.String"></string>
+        <string name="outputCollection" caption="Output Collection" description="The name of the output collection to write the results, replacing previous collection if existed, mandatory when results may be larger than 16MB. If outputCollection is unspecified, the computation is performed in-memory and not persisted." required="false" javaType="java.lang.String"></string>
+        <string name="reduceFunction" caption="Reduce Function" description="A JavaScript encoded reducing function." required="true" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Remove Files" icon="icons/theme.classic/mongo-connector-small.png" localId="remove-files" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The {@link DBObject} optional query." required="false" javaType="com.mongodb.DBObject"></string>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Remove Files Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="remove-files-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="remove-files-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The optional query." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Remove Objects" icon="icons/theme.classic/mongo-connector-small.png" localId="remove-objects" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The collection whose elements will be removed." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="#[payload]" name="query-ref" caption="Query Reference" description="The optional {@link DBObject} query object. Objects that match it will be removed." required="false" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to remove the object." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Remove Objects Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="remove-objects-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The collection whose elements will be removed." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to remove the object." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="remove-objects-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The query object. Objects that match it will be removed." required="false" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Restore" icon="icons/theme.classic/mongo-connector-small.png" localId="restore" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string defaultValue="dump" name="inputPath" caption="Input Path" description="Input path to the dump files, it can be a directory, a zip file or just a bson file." required="false" javaType="java.lang.String"></string>
+        <boolean defaultValue="false" name="drop" caption="Drop" description="Whether to drop existing collections before restore." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="oplogReplay" caption="Oplog Replay" description="Replay oplog for point-in-time restore." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Save Object" icon="icons/theme.classic/mongo-connector-small.png" localId="save-object" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The collection where to insert the object." required="true" javaType="java.lang.String"></string>
+        <string defaultValue="#[payload]" name="element-ref" caption="Element Reference" description="The mandatory {@link DBObject} object to insert." required="false" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to persist the object." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Save Object From Map" icon="icons/theme.classic/mongo-connector-small.png" localId="save-object-from-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The collection where to insert the object." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to persist the object." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+      </group>
+      <group id="element Attributes" caption="Element Attributes">
+        <element-controller-map mapName="element-attributes" localName="save-object-from-map-element-attributes" itemName="element-attribute" caption="Element Attributes" description="The mandatory object to insert." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Start Consistent Request" icon="icons/theme.classic/mongo-connector-small.png" localId="start-consistent-request" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General."></attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Update Objects" icon="icons/theme.classic/mongo-connector-small.png" localId="update-objects" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to update." required="true" javaType="java.lang.String"></string>
+        <string name="query-ref" caption="Query Reference" description="The {@link DBObject} query object used to detect the element to update. If the object Id is an instance of ObjectId you need to specify the value pair as map with the following structure: { &quot;_id&quot; : &quot;ObjectId(OBJECT_ID_VALUE)&quot;}." required="true" javaType="com.mongodb.DBObject"></string>
+        <string defaultValue="#[payload]" name="element-ref" caption="Element Reference" description="The {@link DBObject} mandatory object that will replace that one which matches the query." required="false" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to update." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+        <boolean defaultValue="true" name="multi" caption="Multi" description="If all or just the first object matching the query will be updated." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="upsert" caption="Upsert" description="If the database should create the element if it does not exist." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Update Objects By Function" icon="icons/theme.classic/mongo-connector-small.png" localId="update-objects-by-function" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to update." required="true" javaType="java.lang.String"></string>
+        <string name="function" caption="Function" description="The function used to execute the update." required="true" javaType="java.lang.String"></string>
+        <string name="query-ref" caption="Query Reference" description="The {@link DBObject} query object used to detect the element to update." required="true" javaType="com.mongodb.DBObject"></string>
+        <string name="element-ref" caption="Element Reference" description="The {@link DBObject} mandatory object that will replace that one which matches the query." required="true" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to update." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+        <boolean defaultValue="true" name="multi" caption="Multi" description="If all or just the first object matching the query will be updated." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="upsert" caption="Upsert" description="If the database should create the element if it does not exist." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Update Objects By Function Using Map" icon="icons/theme.classic/mongo-connector-small.png" localId="update-objects-by-function-using-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to update." required="true" javaType="java.lang.String"></string>
+        <string name="function" caption="Function" description="The function used to execute the update." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to update." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+        <boolean defaultValue="true" name="multi" caption="Multi" description="If all or just the first object matching the query will be updated." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="upsert" caption="Upsert" description="If the database should create the element if it does not exist." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <element-controller-map mapName="element-attributes" localName="update-objects-by-function-using-map-element-attributes" itemName="element-attribute" caption="Element Attributes" description="The mandatory object that will replace that one which matches the query." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+        <element-controller-map mapName="query-attributes" localName="update-objects-by-function-using-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The query object used to detect the element to update." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Update Objects Using Map" icon="icons/theme.classic/mongo-connector-small.png" localId="update-objects-using-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to update." required="true" javaType="java.lang.String"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to update." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+        <boolean defaultValue="true" name="multi" caption="Multi" description="If all or just the first object matching the query will be updated." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="upsert" caption="Upsert" description="If the database should create the element if it does not exist." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+      </group>
+      <group id="query Attributes" caption="Query Attributes">
+        <element-controller-map mapName="query-attributes" localName="update-objects-using-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The query object used to detect the element to update." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+      <group id="element Attributes" caption="Element Attributes">
+        <element-controller-map mapName="element-attributes" localName="update-objects-using-map-element-attributes" itemName="element-attribute" caption="Element Attributes" description="The mandatory object that will replace that one which matches the query." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+  <cloud-connector returnType="void" caption="Update Objects Using Query Map" icon="icons/theme.classic/mongo-connector-small.png" localId="update-objects-using-query-map" image="icons/theme.classic/mongo-connector-large.png" abstract="true" extends="http://www.mulesoft.org/schema/mule/mongo/abstractMongoConnectorGeneric" metaData="static">
+    <attribute-category caption="General" description="General.">
+      <group id="general" caption="General">
+        <string name="collection" caption="Collection" description="The name of the collection to update." required="true" javaType="java.lang.String"></string>
+        <string name="element-ref" caption="Element Reference" description="The {@link DBObject} mandatory object that will replace that one which matches the query." required="true" javaType="com.mongodb.DBObject"></string>
+        <enum defaultValue="DATABASE_DEFAULT" allowsCustom="true" name="writeConcern" caption="Write Concern" description="The write concern used to update." supportsExpressions="true" required="false" javaType="org.mule.modules.module.mongo.api.WriteConcern">
+          <option value="DATABASE_DEFAULT"></option>
+          <option value="FSYNC_SAFE"></option>
+          <option value="NONE"></option>
+          <option value="NORMAL"></option>
+          <option value="REPLICAS_SAFE"></option>
+          <option value="SAFE"></option>
+          <option value="STRICT"></option>
+        </enum>
+        <boolean defaultValue="true" name="multi" caption="Multi" description="If all or just the first object matching the query will be updated." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <boolean defaultValue="false" name="upsert" caption="Upsert" description="If the database should create the element if it does not exist." supportsExpressions="true" required="false" javaType="boolean"></boolean>
+        <element-controller-map mapName="query-attributes" localName="update-objects-using-query-map-query-attributes" itemName="query-attribute" caption="Query Attributes" description="The query object used to detect the element to update. If the object Id is an instance of ObjectId you need to specify the value pair as map with the following structure: { &quot;_id&quot; : &quot;ObjectId(OBJECT_ID_VALUE)&quot;}." required="true" javaType="java.util.Map&lt;java.lang.String,java.lang.Object&gt;"></element-controller-map>
+      </group>
+    </attribute-category>
+    <attribute-category caption="Advanced" description="Advanced.">
+      <group id="connector Configuration Overrides" caption="Connector Configuration Overrides">
+        <string name="username" caption="Username" description="The username to use for authentication. NOTE: Please use a dummy user if you have disabled Mongo authentication." required="false" javaType="java.lang.String"></string>
+        <password name="password" caption="Password" description="The password to use for authentication. If the password is null or whitespaces only the connector won't use authentication." required="false" javaType="java.lang.String"></password>
+        <string name="database" caption="Database" description="Name of the database." required="false" javaType="java.lang.String"></string>
+      </group>
+    </attribute-category>
+  </cloud-connector>
+</namespace>
